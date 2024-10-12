@@ -1,0 +1,44 @@
+version: '3.3'
+
+services:
+  postgresdb:
+    container_name: postgresdb
+    image: 'postgres:16.4-alpine'
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+    #volumes:
+      #- 'postgresdb-volume:/var/lib/postgresql/data'
+    restart: always
+    networks:
+     - database-networks
+    environment:
+      POSTGRES_PASSWORD: pass
+
+  mysqldb:
+    container_name: mysqldb
+    image: 'mysql:9.0.1'
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: CMD ["mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=pass"]
+    restart: always
+    networks:
+     - database-networks
+    environment:
+       MYSQL_ROOT_PASSWORD: pass  
+       MYSQL_DATABASE: MyAwesomeApp
+
+volumes:
+  postgresdb-volume:
+
+networks:
+   database:
+     driver: bridge
+     name: database-networks
+     external: false #to use an existing network 
+     ipam:
+      config:
+        - subnet: 192.168.132.0/24  # 10.0.0.0 to 10.255.255.255 , 172.16.0.0 to 172.31.255.255, 192.168.0.0 to 192.168.255.255
+          gateway: 192.168.132.1  
